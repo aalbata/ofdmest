@@ -4,11 +4,14 @@ Repository: <https://github.com/aalbata/ofdmest>
 
 Browser application: <https://aalbata.github.io/ofdmest/>
 
+Authors: Ali Al Bataineh and Lakshmana Kumar Ramasamy, Computer Information Science Division,
+Higher Colleges of Technology, Abu Dhabi, United Arab Emirates.
+
 This repository holds the `ofdmest` library and the scripts, result files and figures of a
 study of pilot-aided OFDM channel estimation in factory channels. The study derives in
 closed form how wide the uniform design profile of a Wiener filter should be for a channel
 of known delay spread, and what an estimation error costs a link in signal-to-noise ratio,
-and tests both with the library. A browser application gives the same computations to users
+and tests both with the library. A browser application gives the main computations to users
 who do not program.
 
 A pilot-aided OFDM receiver turns a few pilot measurements into a channel estimate for every
@@ -64,7 +67,8 @@ a custom grid), give the delay profile of the channel (an RMS delay spread, the 
 hall for the 3GPP indoor factory model, one of the three measured NIST profiles, or a CSV
 file with your own profile) and a list of SNR values. The page returns
 
-- the width of the uniform design profile from the span rule, in nanoseconds and in taps;
+- the width of the uniform design profile from the span rule, in taps and in nanoseconds (the
+  number of taps times the sample period);
 - for each estimator the exact error, the error above the matched Wiener filter, the SNR
   loss, the achievable rate and the multiplications per symbol;
 - charts of the error and of the SNR loss against SNR, and a CSV file with all results.
@@ -77,20 +81,21 @@ Every value is computed by the `ofdmest` package itself, which the page runs in 
 314.0.8, a WebAssembly build of Python 3.14.2 with NumPy 2.4.6 and SciPy 1.18.0. These
 versions differ from the ones pinned for the desktop package. The page loads Pyodide from
 cdn.jsdelivr.net and the package source from this repository. The computation runs in the
-browser tab, so the inputs, including a profile file, stay on the user's computer. The
+browser tab, so what is entered or chosen, including a profile file, stays on the user's
+computer. The delays of a profile file are counted from its first arrival. The
 results are exact values from second-order statistics; nothing is simulated or precomputed.
 The 20 MHz LTE map took about 13 seconds per SNR value in Microsoft Edge on a laptop with
-an Intel Core Ultra 7 155U processor, the other maps took less, and the width search takes
-several times longer.
+an Intel Core Ultra 7 155U processor. The run time grows with the number of pilots and
+subcarriers, and the width search takes several times longer.
 
 To serve the page from a local copy, run `python -m http.server 8000` in the repository
 root and open <http://localhost:8000/>.
 
 The agreement of the page with the desktop library is checked by the scripts in
 `app/check`. `make_reference.py` computes seven requests with the library under CPython
-3.12.10, and `check_page.mjs` replays them through the page in a Chromium-based browser and
-writes `results/app_check.json`. In the recorded run (Microsoft Edge 157 on Windows 11) the
-364 numbers compared differ by at most 2.1e-11. The same script captured
+3.12.10, and `check_page.mjs` replays them in the Python runtime of the page in a
+Chromium-based browser and writes `results/app_check.json`. In the recorded run (Microsoft Edge 157 on Windows 11) the
+371 numbers compared differ by at most 2.1e-11. The same script captured
 `figures/app_screenshot.png`.
 
 ## Results
@@ -111,23 +116,26 @@ and seven SNRs from 0 to 30 dB):
 
 | Map and profiles | Cells | Best width (exact search) | Span rule | Eight times the delay spread | Cyclic prefix |
 |---|---|---|---|---|---|
-| NR type 1, seven exponential profiles | 49 | 0.5 / 0.6 | 0.5 / 0.7 | 1.1 / 5.4 | 6.5 / 9.4 |
-| NR type 2, seven exponential profiles | 49 | 0.5 / 0.6 | 0.5 / 0.7 | 1.2 / 4.2 | 6.8 / 9.4 |
-| LTE, seven exponential profiles | 49 | 0.5 / 0.6 | 0.5 / 0.7 | 1.2 / 4.0 | 9.4 / 11.9 |
-| NR and LTE, three measured profiles | 63 | 0.5 / 1.3 | 1.1 / 2.7 | 1.2 / 2.2 | 6.9 / 10.2 |
-| DVB-T2 window, four maps | 280 | 0.2 / 0.7 | 0.3 / 0.9 | 0.7 / 1.8 | 16.8 / 22.9 |
-| 64-subcarrier link | 70 | 0.6 / 11.3 | 1.0 / 12.0 | 4.7 / 17.7 | 9.4 / 28.5 |
+| NR type 1, seven exponential profiles | 49 | 0.5 / 0.7 | 0.5 / 0.7 | 1.1 / 5.4 | 6.5 / 9.4 |
+| NR type 2, seven exponential profiles | 49 | 0.5 / 0.7 | 0.5 / 0.8 | 1.2 / 4.3 | 6.8 / 9.5 |
+| LTE, seven exponential profiles | 49 | 0.5 / 0.7 | 0.5 / 0.8 | 1.2 / 4.1 | 9.4 / 11.9 |
+| NR and LTE, three measured profiles | 63 | 0.5 / 1.4 | 1.1 / 2.7 | 1.2 / 2.3 | 6.9 / 10.3 |
+| DVB-T2 window, four maps | 280 | 0.2 / 0.8 | 0.3 / 0.9 | 0.7 / 1.8 | 16.8 / 22.9 |
+| 64-subcarrier link | 70 | 0.6 / 11.4 | 1.0 / 12.0 | 4.7 / 17.8 | 9.4 / 28.5 |
 
 On the measured profiles the span rule loses more above 15 dB SNR, because it assumes an
 exponential tail and the measured profiles end about six to seven delay spreads after the
-first arrival; capped at the largest measured delay it loses at most 1.3 dB. An
+first arrival; capped at the largest measured delay it loses at most 1.4 dB. An
 underestimated delay spread is the costly error: with the smaller delay spreads that NIST
 reports for the sites, computed over the samples within 15 dB of the peak, the rule loses up
-to 5.4 dB at the steam plant, and up to 1.8 and 2.1 dB at the machine shop and the automotive
-plant against 2.0 and 2.5 dB with the delay spread of the averaged profile
+to 5.4 dB at the steam plant, and up to 1.9 and 2.1 dB at the machine shop and the automotive
+plant against 2.1 and 2.6 dB with the delay spread of the averaged profile
 (`results/spread_choice.csv`). On the 64-subcarrier link the pilot comb does not resolve the
 profiles, and the exact search (`best_uniform_span`) should set the width. The term `1/B` of
 the rule is an empirical correction for the finite band.
+
+Maxima quoted in this file are rounded upward, so that every bound stated holds for the
+unrounded values; other numbers are rounded to the nearest digit.
 
 SNR loss that the estimation error costs relative to a perfectly known channel, from
 `results/rate.csv` (LTE grid, automotive-plant profile, 15 dB SNR): nearest pilot 3.1 dB,
@@ -234,6 +242,8 @@ search of the library on a 64-tone link, not reported in the paper. `pilot_maps_
 `maps_enumerated`. `pilot_maps.csv`: `rms_delay_spread_ns`, `scenario`, `map`, `indices`,
 `objective_db` (mean exact error over 10 and 20 dB SNR), `ga_seconds`, `ga_maps_evaluated`.
 
-## Licence
+## Authors and licence
 
-MIT. Please cite the accompanying paper and this repository when you use the code.
+Ali Al Bataineh (aalbataineh@hct.ac.ae) and Lakshmana Kumar Ramasamy (lramasamy@hct.ac.ae),
+Higher Colleges of Technology, Abu Dhabi, United Arab Emirates. The code is released under the
+MIT License. Please cite the accompanying paper and this repository when you use the code.

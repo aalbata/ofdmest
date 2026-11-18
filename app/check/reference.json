@@ -26,9 +26,10 @@
     "profile_max_delay_ns": 1953.125,
     "design_spread_ns": 131.79997896923297,
     "rule": {
-     "width_ns": 984.1213044648287,
+     "value_ns": 984.1213044648287,
      "taps": 31,
-     "width_over_spread": 7.466778918792993,
+     "width_ns": 1009.1145833333334,
+     "width_over_spread": 7.656409289480224,
      "unbounded_comb_width_ns": 1039.676860020384
     },
     "best": null,
@@ -115,9 +116,10 @@
     "profile_max_delay_ns": 520.8333333333334,
     "design_spread_ns": 36.10001216346571,
     "rule": {
-     "width_ns": 208.56442646084253,
+     "value_ns": 208.56442646084253,
      "taps": 7,
-     "width_over_spread": 5.777405988575148,
+     "width_ns": 227.86458333333334,
+     "width_over_spread": 6.3120361927173825,
      "unbounded_comb_width_ns": 263.0306573976617
     },
     "best": null,
@@ -317,9 +319,10 @@
     "profile_max_delay_ns": 650.0,
     "design_spread_ns": 93.43790337663614,
     "rule": {
-     "width_ns": 650.0,
+     "value_ns": 650.0,
      "taps": 20,
-     "width_over_spread": 6.956491707438403,
+     "width_ns": 651.0416666666667,
+     "width_over_spread": 6.967639931328529,
      "unbounded_comb_width_ns": 984.3558418006681
     },
     "best": null,
@@ -565,9 +568,10 @@
     "profile_max_delay_ns": 375.0,
     "design_spread_ns": 36.1,
     "rule": {
-     "width_ns": 317.5227177634703,
+     "value_ns": 317.5227177634703,
      "taps": 10,
-     "width_over_spread": 8.795643151342668,
+     "width_ns": 325.52083333333337,
+     "width_over_spread": 9.017197599261312,
      "unbounded_comb_width_ns": 373.0782733190258
     },
     "best": null,
@@ -656,9 +660,10 @@
     "profile_max_delay_ns": 1093.75,
     "design_spread_ns": 74.3000025488131,
     "rule": {
-     "width_ns": 410.9404637754543,
+     "value_ns": 410.9404637754543,
      "taps": 4,
-     "width_over_spread": 5.53082704816164,
+     "width_ns": 437.49999999999994,
+     "width_over_spread": 5.88829051133039,
      "unbounded_comb_width_ns": 821.8809275509086
     },
     "best": null,
@@ -747,14 +752,15 @@
     "profile_max_delay_ns": 800.0,
     "design_spread_ns": 74.2999886795668,
     "rule": {
-     "width_ns": 246.15521074438846,
+     "value_ns": 246.15521074438846,
      "taps": 5,
-     "width_over_spread": 3.3129912281141904,
+     "width_ns": 250.0,
+     "width_over_spread": 3.364738063126413,
      "unbounded_comb_width_ns": 296.15521074438846
     },
     "best": {
-     "width_ns": 250.0,
-     "taps": 6
+     "taps": 6,
+     "width_ns": 300.0
     },
     "matched_error_db": -10.930931814441598,
     "estimators": [
@@ -847,9 +853,10 @@
     "profile_max_delay_ns": 553.3854166666667,
     "design_spread_ns": 37.76010121500412,
     "rule": {
-     "width_ns": 436.3270378543172,
+     "value_ns": 436.3270378543172,
      "taps": 14,
-     "width_over_spread": 11.555240156002045,
+     "width_ns": 455.7291666666667,
+     "width_over_spread": 12.069066342586522,
      "unbounded_comb_width_ns": 490.79326879113637
     },
     "best": null,

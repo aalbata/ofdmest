@@ -3,7 +3,7 @@
 // The script opens the page in a Chromium-based browser, replays the requests of
 // reference.json through the Python runtime of the page and compares every number with the
 // CPython reference. The outcome is written to results/app_check.json. With --screenshot it
-// then runs the default inputs of the page and saves an image of the result.
+// then runs the LTE map with the delay spread of the automotive plant and saves an image of the result.
 //
 // Usage, from the repository root, with the page served locally or from its public address:
 //   npm install puppeteer-core
@@ -74,10 +74,11 @@ for (const p of out.problems) console.log("DIFFERENT " + p);
 
 if (shotFile && out.problems.length === 0) {
   await ready(page);
+  // The pictured case is the LTE map with the delay spread of the automotive plant, 131.8 ns.
   const started = Date.now();
-  await page.evaluate(() => document.getElementById("form").requestSubmit());
+  await page.evaluate(() => { document.getElementById("spread").value = "131.8"; document.getElementById("form").requestSubmit(); });
   await page.waitForFunction(() => document.getElementById("status").textContent === "Done.", { timeout: 600000 });
-  console.log("default inputs computed in " + ((Date.now() - started) / 1000).toFixed(1) + " s");
+  console.log("pictured case computed in " + ((Date.now() - started) / 1000).toFixed(1) + " s");
   const bottom = await page.evaluate(() => {
     const cards = document.querySelectorAll("#results > section");
     const form = document.getElementById("form").getBoundingClientRect().bottom;

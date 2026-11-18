@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from fractions import Fraction
 
 import numpy as np
 import pandas as pd
@@ -79,7 +80,7 @@ def parse_grid(text: str, window: int | None = None) -> tuple[OfdmGrid, PilotMap
     if kind == "dvbt2":
         fft = int(parts[1].lower().replace("k", "")) * 1024
         pattern = parts[2].upper()
-        gi = eval(parts[3]) if len(parts) > 3 else 1.0 / 32.0
+        gi = float(Fraction(parts[3])) if len(parts) > 3 else 1.0 / 32.0
         tu = DVBT2_TU_8MHZ_US[fft] * 1e-6
         carriers = DVBT2_CARRIERS[fft]
         n = carriers if window is None else min(window, carriers)

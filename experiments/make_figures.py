@@ -244,7 +244,6 @@ def fig_concept() -> None:
     best = float(np.log(1.0 / beta))
     w = np.linspace(0.0, 14.0, 561)
     violet = "#9467bd"
-    plt.rcParams["mathtext.fontset"] = "stix"
     fig, (a, b) = plt.subplots(1, 2, figsize=(COLUMN, 1.8))
     a.axvspan(0.0, best, color=violet, alpha=0.16, linewidth=0)
     a.semilogy(w, np.exp(-w), color="#1f77b4")
@@ -278,7 +277,6 @@ def fig_concept() -> None:
     fig.subplots_adjust(left=0.135, right=0.985, top=0.97, bottom=0.36, wspace=0.50)
     fig.legend(handles, labels, ncol=4, loc="lower center", bbox_to_anchor=(0.5, 0.0), columnspacing=0.9, handlelength=1.6, handletextpad=0.5)
     save(fig, "design_concept")
-    plt.rcParams["mathtext.fontset"] = matplotlib.rcParamsDefault["mathtext.fontset"]
 
 
 SHAPE_COLOURS = {
@@ -330,13 +328,13 @@ def _arrow(ax, start: tuple[float, float], end: tuple[float, float], head: bool 
 
 
 def fig_overview() -> None:
-    """Flow of the study from the inputs through the designs to the exact error and the link-level measure.
+    """Flow of the study from the inputs through the estimators to the exact error and the link-level measure.
 
     Parallelograms are inputs, wavy-bottom shapes are files, the rectangle with the span rule
     and the two rectangles of the analysis are the steps of this study, hexagons are the
     estimators it is compared with, and the rounded shape is the check by simulation.
     """
-    fig, ax = plt.subplots(figsize=(DOUBLE, 2.5))
+    fig, ax = plt.subplots(figsize=(DOUBLE, 2.52))
     ax.set_axis_off()
     rows = [2.18, 1.60, 1.02, 0.44]
     h = 0.44
@@ -368,12 +366,15 @@ def fig_overview() -> None:
     _shape(ax, "process", 6.32, rows[1], 1.42, 0.62, "Link-level measure\neffective SNR, rate,\nSNR loss")
     _shape(ax, "secondary", 4.66, rows[3], 1.28, h, "Monte Carlo check,\nbit error rate")
     _shape(ax, "document", 6.32, rows[3], 1.42, h - 0.06, "Result files,\ntables and figures")
-    _arrow(ax, (5.30, rows[1]), (5.61, rows[1]))
+    top = rows[0] + 0.31
+    _arrow(ax, (right_bus, rows[0]), (right_bus, top), head=False)
+    _arrow(ax, (right_bus, top), (6.32, top), head=False)
+    _arrow(ax, (6.32, top), (6.32, rows[1] + 0.31))
     _arrow(ax, (4.66, rows[1] - 0.31), (4.66, rows[3] + h / 2))
     _arrow(ax, (6.32, rows[1] - 0.31), (6.32, rows[3] + (h - 0.06) / 2))
     _arrow(ax, (5.30, rows[3]), (5.61, rows[3]))
     ax.set_xlim(0.0, DOUBLE)
-    ax.set_ylim(0.06, 2.56)
+    ax.set_ylim(0.06, 2.58)
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
     save(fig, "study_overview")
 

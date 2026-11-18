@@ -125,7 +125,7 @@ footer a, p a { color: var(--accent); }
     <div id="csvBox" hidden>
       <label for="file">CSV file with the columns delay_s and power</label>
       <input type="file" id="file" accept=".csv,text/csv">
-      <p class="hint">Delays in seconds, powers in linear units. The file is read by this page and is not uploaded.</p>
+      <p class="hint">Delays in seconds, powers in linear units. Delays are counted from the first arrival. The file is read by this page and is not uploaded.</p>
     </div>
 
     <label for="snr">SNR values (dB)</label>
@@ -150,7 +150,7 @@ footer a, p a { color: var(--accent); }
       <h2>Width of the uniform design profile (span rule)</h2>
       <p class="hint" id="summary" style="margin:0 0 8px"></p>
       <div class="tablewrap"><table id="ruleTable"></table></div>
-      <p class="hint">Width = delay spread &times; ln(SNR / (pilot spacing &times; delay spread)), minus one resolution cell of the band (an empirical correction), within the limits of the cyclic prefix and of the pilot spacing.</p>
+      <p class="hint">Rule: delay spread &times; ln(SNR / (pilot spacing &times; delay spread)), minus one resolution cell of the band (an empirical correction), within the limits of the cyclic prefix and of the pilot spacing. The width shown is that of the taps that realize it, the number of taps times the sample period.</p>
     </section>
     <section class="card">
       <div class="toolbar">
@@ -175,7 +175,7 @@ footer a, p a { color: var(--accent); }
 </div>
 </main>
 <footer>
-  <p>The computation runs in this browser tab and no input leaves the computer. The Python runtime (Pyodide <span id="pyVersion"></span>) is loaded from cdn.jsdelivr.net, and its NumPy and SciPy versions differ from those pinned for the package. The 20 MHz LTE map takes about 13 seconds per SNR value on a laptop, and the other maps take less. The analysis covers one OFDM symbol with a static channel and one antenna. Package <code>ofdmest</code> <span id="pkgVersion"></span>, MIT License, <a href="https://github.com/aalbata/ofdmest">source code and paper results</a>.</p>
+  <p>The computation runs in this browser tab. What is entered or chosen here, including a profile file, does not leave the computer. The Python runtime (Pyodide <span id="pyVersion"></span>) is loaded from cdn.jsdelivr.net, and its NumPy and SciPy versions differ from those pinned for the package. The 20 MHz LTE map takes about 13 seconds per SNR value on a laptop, and the run time grows with the number of pilots and subcarriers. The analysis covers one OFDM symbol with a static channel and one antenna. Package <code>ofdmest</code> <span id="pkgVersion"></span>, MIT License, by Ali Al Bataineh and Lakshmana Kumar Ramasamy, <a href="https://github.com/aalbata/ofdmest">source code and paper results</a>.</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v314.0.8/full/pyodide.js"></script>
@@ -211,6 +211,7 @@ const MINUS = String.fromCharCode(8722);
 const $ = (id) => document.getElementById(id);
 let bridge = null;
 let lastRun = null;
+const measured = {};
 
 function setStatus(text, isError) {
   $("status").textContent = text;
@@ -236,6 +237,7 @@ async function start() {
   $("pyVersion").textContent = PYODIDE_VERSION;
   try {
     const pyodide = await loadPyodide();
+    $("pyVersion").textContent = pyodide.version;
     setStatus("Loading NumPy, SciPy and pandas.");
     await pyodide.loadPackage(["numpy", "scipy", "pandas"]);
     setStatus("Loading the ofdmest package.");
@@ -244,6 +246,11 @@ async function start() {
       const r = await fetch(PACKAGE_BASE + f);
       if (!r.ok) throw new Error("could not load " + f);
       pyodide.FS.writeFile("/lib/ofdmest/" + f, await r.text());
+    }
+    for (const site of ["steam_plant", "machine_shop", "automotive_plant"]) {
+      const r = await fetch(PROFILE_BASE + "nist_profile_" + site + ".csv");
+      if (!r.ok) throw new Error("could not load the measured profiles");
+      measured[site] = await r.text();
     }
     const b = await fetch("bridge.py");
     if (!b.ok) throw new Error("could not load bridge.py");
@@ -300,10 +307,7 @@ async function readInputs() {
     const l = positive("hallL", "The hall length"), w = positive("hallW", "The hall width"), h = positive("hallH", "The hall height");
     q.profile = "inf:" + (l * w * h) + ":" + (2 * (l * w + l * h + w * h)) + ":" + ($("los").checked ? "los" : "nlos");
   } else if (kind === "nist") {
-    const site = $("site").value;
-    const r = await fetch(PROFILE_BASE + "nist_profile_" + site + ".csv");
-    if (!r.ok) throw new Error("could not load the measured profile");
-    q.profile = parseCsvProfile(await r.text(), "NIST " + $("site").selectedOptions[0].textContent.toLowerCase() + ", measured");
+    q.profile = parseCsvProfile(measured[$("site").value], "NIST " + $("site").selectedOptions[0].textContent.toLowerCase() + ", measured");
   } else {
     const file = $("file").files[0];
     if (!file) throw new Error("choose a CSV file with the delay profile");
@@ -457,12 +461,12 @@ function lineChart(series, xLabel, yLabel) {
 
 function downloadCsv() {
   if (!lastRun) return;
-  const head = ["system", "map", "profile", "profile_rms_delay_spread_ns", "design_delay_spread_ns", "snr_db", "rule_width_ns", "rule_taps", "estimator", "error_db", "above_matched_db", "snr_loss_db", "rate_bits", "real_multiplications"];
+  const head = ["system", "map", "profile", "profile_rms_delay_spread_ns", "design_delay_spread_ns", "snr_db", "rule_value_ns", "rule_width_ns", "rule_taps", "best_width_ns", "best_taps", "estimator", "error_db", "above_matched_db", "snr_loss_db", "rate_bits", "real_multiplications"];
   const quote = (v) => '"' + String(v).replaceAll('"', '""') + '"';
   const lines = [head.join(",")];
   for (const p of lastRun.points) for (const e of p.estimators) {
     if (e.error_db === undefined) continue;
-    lines.push([quote(lastRun.system), quote(p.map), quote(p.profile), p.profile_spread_ns, p.design_spread_ns, p.snr_db, p.rule.width_ns, p.rule.taps, quote(e.estimator), e.error_db, e.loss_db, e.snr_loss_db, e.rate_bits, e.real_multiplications].join(","));
+    lines.push([quote(lastRun.system), quote(p.map), quote(p.profile), p.profile_spread_ns, p.design_spread_ns, p.snr_db, p.rule.value_ns, p.rule.width_ns, p.rule.taps, p.best ? p.best.width_ns : "", p.best ? p.best.taps : "", quote(e.estimator), e.error_db, e.loss_db, e.snr_loss_db, e.rate_bits, e.real_multiplications].join(","));
   }
   const blob = new Blob([lines.join(String.fromCharCode(10)) + String.fromCharCode(10)], { type: "text/csv" });
   const a = document.createElement("a");

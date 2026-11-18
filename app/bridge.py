@@ -30,12 +30,16 @@ def version() -> str:
 
 
 def run_point(request_json: str) -> str:
-    """Evaluate one operating point; errors of the inputs are returned under the key ``error``."""
+    """Evaluate one operating point; errors of the inputs are returned under the key ``error``.
+
+    The delays of a profile given as a table are counted from its first arrival.
+    """
     q = json.loads(request_json)
     try:
         profile = q["profile"]
         if isinstance(profile, dict):
-            profile = DelayProfile(np.array(profile["delay_s"], dtype=float), np.array(profile["power"], dtype=float), name=profile["name"])
+            delays = np.array(profile["delay_s"], dtype=float)
+            profile = DelayProfile(delays - delays.min(), np.array(profile["power"], dtype=float), name=profile["name"])
         out = compare_from_specs(
             q["grid"],
             profile,
@@ -46,6 +50,6 @@ def run_point(request_json: str) -> str:
             cap_at_max_delay=bool(q.get("cap_at_max_delay")),
             search_best=bool(q.get("search_best")),
         )
-    except (ValueError, KeyError, IndexError, SyntaxError, NameError, ZeroDivisionError) as err:
-        return json.dumps({"error": f"{type(err).__name__}: {err}"})
+    except Exception as err:
+        return json.dumps({"error": f"The inputs could not be used ({type(err).__name__}: {err}). Check the grid, the pilot map and the profile."})
     return json.dumps(_plain(out))

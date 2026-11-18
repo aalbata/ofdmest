@@ -139,6 +139,8 @@ The `experiments` folder holds the scripts that produced every table and figure 
 accompanying paper; `reproduce.py` regenerates them from the shipped result files (fast
 path) or from scratch (`--full`).
 
-## Licence
+## Authors and licence
 
-MIT. Please cite the accompanying paper and this repository when you use the package.
+Ali Al Bataineh and Lakshmana Kumar Ramasamy, Higher Colleges of Technology, Abu Dhabi, United
+Arab Emirates. MIT License. Please cite the accompanying paper and this repository when you use
+the package.

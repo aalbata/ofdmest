@@ -7,6 +7,7 @@ be defined here; the script checks that and stops otherwise.
 from __future__ import annotations
 
 import json
+import math
 import re
 import subprocess
 import sys
@@ -45,8 +46,50 @@ def is_prefix(names: pd.Series) -> pd.Series:
     return names.str.startswith("Wiener (uniform to")
 
 
+class Shown(str):
+    """A formatted number that keeps its value and the number of decimals it was formatted with."""
+
+    raw = float("nan")
+    digits = 1
+
+
 def fmt(v: float, nd: int = 1) -> str:
-    return f"{v:.{nd}f}"
+    text = Shown(f"{v:.{nd}f}")
+    text.raw, text.digits = float(v), nd
+    return text
+
+
+def up(v: float, nd: int = 1) -> str:
+    """Smallest number with ``nd`` decimals that is not below ``v``."""
+    q = 10**nd
+    return f"{math.ceil(v * q - 1e-9) / q:.{nd}f}"
+
+
+def down(v: float, nd: int = 1) -> str:
+    """Largest number with ``nd`` decimals that is not above ``v``."""
+    q = 10**nd
+    return f"{math.floor(v * q + 1e-9) / q:.{nd}f}"
+
+
+ROUNDED_UP = {"CurveBandDevAuto", "CurveBandDevSteam", "CurvePlainDevAuto", "CurvePlainDevSteam"}
+ROUNDED_TO_NEAREST = {"EdgeLinearOscMin", "EdgeLinearOscMax"}
+
+
+def directed(out: dict) -> None:
+    """Round maxima upward and minima downward, so that every bound quoted in the text holds.
+
+    A macro is a maximum when its name has the word Max or Worst or is listed in ROUNDED_UP, and
+    a minimum when its name has the word Min. All other numbers stay rounded to the nearest
+    digit. The maximum columns of the tables are rounded upward in the same way.
+    """
+    for name, value in out.items():
+        if not isinstance(value, Shown) or name in ROUNDED_TO_NEAREST:
+            continue
+        words = re.findall(r"[A-Z][a-z]*", name)
+        if "Max" in words or "Worst" in words or name in ROUNDED_UP:
+            out[name] = up(value.raw, value.digits)
+        elif "Min" in words:
+            out[name] = down(value.raw, value.digits)
 
 
 def minus(text: str) -> str:
@@ -72,7 +115,7 @@ def macros_from_validation(v: pd.DataFrame, out: dict) -> None:
     out["ValSymbols"] = "10,000"
     rows = []
     for m, g in v.groupby("map", sort=False):
-        rows.append(f"{VALIDATION_MAPS.get(m, m)} & {g.n_pilots.iloc[0]}/{g.n_tones.iloc[0]} & {len(g)} & {100*g.inside_95.mean():.0f} & {g.relative_error_percent.abs().max():.2f} \\\\")
+        rows.append(f"{VALIDATION_MAPS.get(m, m)} & {g.n_pilots.iloc[0]}/{g.n_tones.iloc[0]} & {len(g)} & {100*g.inside_95.mean():.0f} & {up(g.relative_error_percent.abs().max(), 2)} \\\\")
     table("validation", "Exact error against Monte Carlo simulation with 10,000 symbols per cell, with the pilots per analysed subcarriers, the number of cells, the share of cells in percent whose exact value lies inside the 95 percent interval of the simulation, and the largest relative deviation in percent",
           "tab:validation", "lcccc", "Map & Pilots & Cells & Inside & Dev. \\\\", rows, tabcolsep=1.8)
 
@@ -224,8 +267,9 @@ def macros_from_span(sp: pd.DataFrame, out: dict) -> None:
     out["SpanCellsLink"] = str(len(link))
     for tag, g in (("WideExp", expo), ("WideMeas", meas), ("Wide", wide), ("Narrow", narrow), ("Link", link)):
         for col, name in (("rule_loss_db", "Rule"), ("best_loss_db", "Best"), ("eight_loss_db", "Eight"), ("prefix_loss_db", "Prefix"), ("unbounded_loss_db", "Unbounded"), ("capped_loss_db", "Capped")):
-            out[f"{name}LossMax{tag}"] = fmt(g[col].max())
-            out[f"{name}LossMin{tag}"] = fmt(g[col].min())
+            digits = 2 if tag == "WideExp" and name in ("Rule", "Best") else 1
+            out[f"{name}LossMax{tag}"] = fmt(g[col].max(), digits)
+            out[f"{name}LossMin{tag}"] = fmt(g[col].min(), digits)
             out[f"{name}LossMedian{tag}"] = fmt(g[col].median())
         out[f"RuleVsBestMax{tag}"] = fmt(g.rule_vs_best.max(), 2)
     out["RuleVsBestMaxWideExpEval"] = fmt(expo[~expo.development].rule_vs_best.max(), 2)
@@ -263,7 +307,7 @@ def macros_from_span(sp: pd.DataFrame, out: dict) -> None:
     groups = [("NR type 1, exponential", expo[expo.grid == NR1]), ("NR type 2, exponential", expo[expo.grid == NR2]), ("LTE CRS, exponential", expo[expo.grid == LTE]),
               ("NR and LTE, measured", meas), ("DVB-T2, four maps", narrow), ("64-subcarrier link", link)]
     for name, g in groups:
-        cells = [f"{g[c].median():.1f} & {g[c].max():.1f}" for c in ("best_loss_db", "rule_loss_db", "eight_loss_db", "prefix_loss_db")]
+        cells = [f"{g[c].median():.1f} & {up(g[c].max())}" for c in ("best_loss_db", "rule_loss_db", "eight_loss_db", "prefix_loss_db")]
         body.append(f"{name} & {len(g)} & " + " & ".join(cells) + " \\\\")
     header = " & & \\multicolumn{2}{c}{Best width} & \\multicolumn{2}{c}{Span rule} & \\multicolumn{2}{c}{Eight times} & \\multicolumn{2}{c}{Prefix} \\\\\n\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}\\cmidrule(lr){7-8}\\cmidrule(lr){9-10}\nMap and profiles & Cells & Med. & Max & Med. & Max & Med. & Max & Med. & Max \\\\"
     table("span", "Loss in dB of the uniform design relative to the matched design, as median and maximum over the factory profiles and seven SNRs, for four choices of the width of the design profile",
@@ -356,7 +400,7 @@ def macros_from_mismatch(m: pd.DataFrame, out: dict) -> None:
         cells = []
         for grid in grids:
             g = sub[(sub.grid == grid) & (sub.design == d)]
-            cells.append(f"{g.loss_db.median():.1f} & {g.loss_db.max():.1f}")
+            cells.append(f"{g.loss_db.median():.1f} & {up(g.loss_db.max())}")
         body.append(f"{labels[d]} & " + " & ".join(cells) + " \\\\")
     header = " & \\multicolumn{2}{c}{" + "} & \\multicolumn{2}{c}{".join(gshort[g] for g in grids) + "} \\\\\n\\cmidrule(lr){2-3}\\cmidrule(lr){4-5}\\cmidrule(lr){6-7}\\cmidrule(lr){8-9}\nDesign & Med. & Max & Med. & Max & Med. & Max & Med. & Max \\\\"
     table("mismatch", "Loss in dB of a mismatched Wiener design relative to the matched design, as median and maximum over a sweep of exponential channels and the SNRs 5, 15 and 25 dB. The design profile is exponential with the actual delay spread times the factor shown, uniform over that multiple of the delay spread, or uniform over the cyclic prefix",
@@ -389,7 +433,7 @@ def macros_from_ber(b: pd.DataFrame, out: dict, prefix: str, column: str) -> Non
         out["BerMatchedThirty"] = f"{ber(MATCHED, 30):.4f}"
         out["BerCells"] = str(len(b))
         out["BerInsidePct"] = fmt(100 * (abs(b.mc_error_db - b.exact_error_db) <= b.mc_half_width_db).mean(), 0)
-        out["BerMaxDevDb"] = f"{(b.mc_error_db - b.exact_error_db).abs().max():.2f}"
+        out["BerMaxDevDb"] = fmt((b.mc_error_db - b.exact_error_db).abs().max(), 2)
 
 
 def macros_from_per_tone(t: pd.DataFrame, out: dict) -> None:
@@ -535,6 +579,7 @@ def main() -> None:
     macros_from_per_tone(pd.read_csv(RESULTS / "per_tone.csv"), out)
     macros_from_cost(pd.read_csv(RESULTS / "cost.csv"), out)
     macros_from_app_check(out)
+    directed(out)
     setup_table()
     lines = [f"\\newcommand{{\\{k}}}{{{minus(v)}}}" for k, v in sorted(out.items())]
     (TABLES / "numbers.tex").write_text("% Generated by experiments/make_tables.py from the result files. Do not edit.\n" + "\n".join(lines) + "\n")

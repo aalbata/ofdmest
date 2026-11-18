@@ -57,7 +57,9 @@ def compare(
     ``design_spread_s`` is the RMS delay spread given to the span rule; the default is that
     of ``profile``. ``max_delay_s`` caps the rule width when the largest delay of the channel
     is known. ``search_best`` adds the uniform design whose width has the smallest exact
-    error. Errors are in decibels, ``loss_db`` is the error above that of the matched design,
+    error. A design profile of ``n`` equal taps on the sample grid has the width ``n`` sample
+    periods; ``value_ns`` is the value of the rule before it is realized in taps. Errors
+    are in decibels, ``loss_db`` is the error above that of the matched design,
     ``snr_loss_db`` the SNR that the estimation error costs and ``rate_bits`` the mean
     achievable rate per subcarrier use.
     """
@@ -66,11 +68,13 @@ def compare(
         raise ValueError("the design delay spread must be positive; a single-tap profile needs design_spread_s")
     spacing = mean_pilot_spacing_hz(grid, pilots)
     span = rule_span(grid, pilots, spread, snr_db, max_delay_s)
+    taps = int(np.floor(span / grid.sample_period_s + 1e-9)) + 1
     estimators = standard_estimators(grid, pilots, spread, snr_db, max_delay_s)
     best = None
     if search_best:
         best_span, _ = best_uniform_span(grid, pilots, profile, snr_db)
-        best = {"width_ns": best_span * 1e9, "taps": int(np.floor(best_span / grid.sample_period_s + 1e-9)) + 1}
+        best_taps = int(np.floor(best_span / grid.sample_period_s + 1e-9)) + 1
+        best = {"taps": best_taps, "width_ns": best_taps * grid.sample_period_s * 1e9}
         estimators.insert(len(estimators) - 1, uniform_design(grid, best_span, BEST_NAME))
     matched_db = exact_error(estimators[-1], grid, pilots, profile, snr_db).total_db
     rows = []
@@ -103,9 +107,10 @@ def compare(
         "profile_max_delay_ns": profile.max_delay_s * 1e9,
         "design_spread_ns": spread * 1e9,
         "rule": {
-            "width_ns": span * 1e9,
-            "taps": int(np.floor(span / grid.sample_period_s + 1e-9)) + 1,
-            "width_over_spread": span / spread,
+            "value_ns": span * 1e9,
+            "taps": taps,
+            "width_ns": taps * grid.sample_period_s * 1e9,
+            "width_over_spread": taps * grid.sample_period_s / spread,
             "unbounded_comb_width_ns": uniform_span_rule(spread, spacing, snr_db) * 1e9,
         },
         "best": best,
