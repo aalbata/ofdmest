@@ -1,0 +1,21 @@
+{
+ "page_runtime": {
+  "python": "3.14.2",
+  "numpy": "2.4.6",
+  "scipy": "1.18.0",
+  "pyodide": "314.0.8",
+  "ofdmest": "0.3.0",
+  "browser": "Edg/157.0.4341.60"
+ },
+ "reference_runtime": {
+  "python": "3.12.10",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "ofdmest": "0.3.0"
+ },
+ "cases": 7,
+ "numbers_compared": 364,
+ "largest_absolute_difference": 2.0605739337042905e-11,
+ "tolerance": 0.000001,
+ "differences_beyond_tolerance": 0
+}

@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ofdmest: Wiener design width and estimator comparison</title>
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --ink: #1c2330; --muted: #5b6577; --line: #d9dee7;
+  --accent: #5b3fa8; --accent-ink: #ffffff; --warn: #a24a00; --grid: #e6e9ef;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #14171d; --card: #1d222b; --ink: #e7eaf0; --muted: #a2abbb; --line: #333b49;
+          --accent: #a48cf0; --accent-ink: #14171d; --warn: #ffb469; --grid: #2a313d; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header, main, footer { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+header { padding-top: 22px; }
+h1 { font-size: 1.45rem; margin: 0 0 4px; }
+h2 { font-size: 1.05rem; margin: 0 0 10px; }
+p.lead { margin: 0 0 14px; color: var(--muted); max-width: 78ch; }
+.layout { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 940px) { .layout { grid-template-columns: 340px 1fr; align-items: start; } }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.layout > * { min-width: 0; }
+.results { display: grid; gap: 16px; }
+.results > *, .charts > * { min-width: 0; }
+label { display: block; font-weight: 600; margin: 12px 0 4px; }
+label.inline { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
+label.inline input { margin-top: 4px; }
+.hint { color: var(--muted); font-size: 0.86rem; margin: 3px 0 0; overflow-wrap: anywhere; }
+input[type=file] { max-width: 100%; }
+input[type=text], input[type=number], select {
+  width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--bg); color: var(--ink); font: inherit;
+}
+.row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+fieldset { border: 0; padding: 0; margin: 0; }
+details { margin-top: 14px; }
+summary { cursor: pointer; font-weight: 600; }
+button {
+  font: inherit; font-weight: 600; padding: 9px 16px; border-radius: 7px; border: 1px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink); cursor: pointer;
+}
+button.secondary { background: transparent; color: var(--accent); }
+button:disabled { opacity: 0.5; cursor: default; }
+#status { margin-top: 12px; color: var(--muted); min-height: 1.5em; }
+#status.error { color: var(--warn); font-weight: 600; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 0.86rem; color: var(--muted); font-weight: 600; white-space: normal; vertical-align: bottom; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 7px; }
+.charts { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 1100px) { .charts { grid-template-columns: 1fr 1fr; } }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--ink); font: 12px system-ui, sans-serif; }
+svg .axis { stroke: var(--muted); stroke-width: 1; }
+svg .gridline { stroke: var(--grid); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.86rem; margin-top: 6px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.toolbar select { width: auto; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 16px; margin: 0; }
+.facts div { min-width: 0; }
+.facts dt { font-size: 0.82rem; color: var(--muted); }
+.facts dd { margin: 0; font-weight: 600; }
+footer { color: var(--muted); font-size: 0.86rem; padding-top: 18px; padding-bottom: 28px; }
+footer a, p a { color: var(--accent); }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Wiener design width and estimator comparison for pilot-aided OFDM</h1>
+  <p class="lead">Enter a pilot map, a delay profile and the signal-to-noise ratio (SNR). The page returns the width of the uniform design profile of a Wiener channel estimator from the span rule, and the exact error, SNR loss and achievable rate of the common linear estimators. All values are computed from second-order channel statistics by the <code>ofdmest</code> package. Nothing is simulated.</p>
+</header>
+<main>
+<div class="layout">
+  <form class="card" id="form" autocomplete="off">
+    <h2>Inputs</h2>
+    <label for="system">System and pilot map</label>
+    <select id="system"></select>
+    <p class="hint" id="systemNote"></p>
+    <div id="customBox" hidden>
+      <label for="gridSpec">Grid</label>
+      <input type="text" id="gridSpec" value="custom:64:312500:64:0.8us">
+      <p class="hint">nr:&lt;resource blocks&gt;:&lt;spacing kHz&gt;:&lt;DM-RS type&gt;, lte:&lt;resource blocks&gt;, or custom:&lt;subcarriers&gt;:&lt;spacing Hz&gt;:&lt;FFT size&gt;:&lt;cyclic prefix&gt;</p>
+      <label for="mapSpec">Pilot map</label>
+      <input type="text" id="mapSpec" value="centred:8">
+      <p class="hint">comb:&lt;spacing&gt;:&lt;offset&gt;, centred:&lt;pilots&gt;, anchored:&lt;pilots&gt;, list:&lt;i,j,...&gt;. Leave empty for the standard map of an nr or lte grid.</p>
+    </div>
+
+    <label for="profileKind">Delay profile of the channel</label>
+    <select id="profileKind">
+      <option value="exp">Exponential, from the RMS delay spread</option>
+      <option value="inf">3GPP indoor factory model, from the hall size</option>
+      <option value="nist">Measured in a factory hall (NIST)</option>
+      <option value="csv">My own profile (CSV file)</option>
+    </select>
+    <div id="expBox">
+      <label for="spread">RMS delay spread (ns)</label>
+      <input type="number" id="spread" value="132" min="1" step="any">
+      <p class="hint">NIST reports 36 ns for a steam plant, 74 ns for a machine shop and 132 ns for an automotive plant.</p>
+    </div>
+    <div id="infBox" hidden>
+      <label>Hall length, width and height (m)</label>
+      <div class="row">
+        <input type="number" id="hallL" value="60" min="1" step="any" aria-label="Hall length in metres">
+        <input type="number" id="hallW" value="40" min="1" step="any" aria-label="Hall width in metres">
+        <input type="number" id="hallH" value="6" min="1" step="any" aria-label="Hall height in metres">
+      </div>
+      <label class="inline"><input type="checkbox" id="los" checked> Line of sight between transmitter and receiver</label>
+    </div>
+    <div id="nistBox" hidden>
+      <label for="site">Site</label>
+      <select id="site">
+        <option value="steam_plant">Steam plant</option>
+        <option value="machine_shop">Machine shop</option>
+        <option value="automotive_plant" selected>Automotive assembly plant</option>
+      </select>
+      <p class="hint">Averaged power-delay profile of one measurement run per site, processed from the public NIST files.</p>
+    </div>
+    <div id="csvBox" hidden>
+      <label for="file">CSV file with the columns delay_s and power</label>
+      <input type="file" id="file" accept=".csv,text/csv">
+      <p class="hint">Delays in seconds, powers in linear units. The file is read by this page and is not uploaded.</p>
+    </div>
+
+    <label for="snr">SNR values (dB)</label>
+    <input type="text" id="snr" value="5, 15, 25">
+    <p class="hint">Comma-separated, between &minus;10 and 40 dB, at most 9 values.</p>
+
+    <details>
+      <summary>Optional settings</summary>
+      <label for="designSpread">Delay spread given to the span rule (ns)</label>
+      <input type="number" id="designSpread" min="1" step="any" placeholder="that of the profile">
+      <p class="hint">Enter a different value to see the effect of an inaccurate delay spread.</p>
+      <label class="inline"><input type="checkbox" id="cap"> Cap the rule width at the largest delay of the profile</label>
+      <label class="inline"><input type="checkbox" id="best"> Also search the width with the smallest exact error (slower)</label>
+    </details>
+
+    <div style="margin-top:16px"><button type="submit" id="go" disabled>Compute</button></div>
+    <div id="status" role="status" aria-live="polite">Loading the Python runtime. The first visit can take up to a minute.</div>
+  </form>
+
+  <div class="results" id="results" hidden>
+    <section class="card">
+      <h2>Width of the uniform design profile (span rule)</h2>
+      <p class="hint" id="summary" style="margin:0 0 8px"></p>
+      <div class="tablewrap"><table id="ruleTable"></table></div>
+      <p class="hint">Width = delay spread &times; ln(SNR / (pilot spacing &times; delay spread)), minus one resolution cell of the band (an empirical correction), within the limits of the cyclic prefix and of the pilot spacing.</p>
+    </section>
+    <section class="card">
+      <div class="toolbar">
+        <h2 style="margin:0">Estimators at <select id="snrPick" aria-label="SNR shown in the table"></select></h2>
+        <button type="button" class="secondary" id="download">Download all results (CSV)</button>
+      </div>
+      <div class="tablewrap"><table id="estTable"></table></div>
+      <p class="hint">Error is the normalized mean squared error over the band. The matched Wiener filter is built on the actual profile and is the best linear estimator. SNR loss and rate treat the estimation error as noise in Rayleigh fading. Multiplications are real multiplications per OFDM symbol.</p>
+    </section>
+    <section class="card">
+      <div class="charts">
+        <div><h2>Exact estimation error</h2><div id="chartError"></div></div>
+        <div><h2>SNR loss caused by the estimation error</h2><div id="chartLoss"></div></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </section>
+    <section class="card">
+      <h2>Setup of this computation</h2>
+      <dl class="facts" id="facts"></dl>
+    </section>
+  </div>
+</div>
+</main>
+<footer>
+  <p>The computation runs in this browser tab and no input leaves the computer. The Python runtime (Pyodide <span id="pyVersion"></span>) is loaded from cdn.jsdelivr.net, and its NumPy and SciPy versions differ from those pinned for the package. The 20 MHz LTE map takes about 13 seconds per SNR value on a laptop, and the other maps take less. The analysis covers one OFDM symbol with a static channel and one antenna. Package <code>ofdmest</code> <span id="pkgVersion"></span>, MIT License, <a href="https://github.com/aalbata/ofdmest">source code and paper results</a>.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v314.0.8/full/pyodide.js"></script>
+<script>
+"use strict";
+const PYODIDE_VERSION = "314.0.8";
+const PACKAGE_BASE = "../ofdmest/src/ofdmest/";
+const PACKAGE_FILES = ["__init__.py", "analysis.py", "channel.py", "cli.py", "cost.py", "design.py", "estimators.py", "pilots.py", "recommend.py", "report.py", "search.py", "simulate.py"];
+const PROFILE_BASE = "../results/nist_profiles/";
+const SYSTEMS = [
+  { label: "5G NR, 20 MHz, DM-RS type 1", note: "51 resource blocks at 30 kHz subcarrier spacing. Every second subcarrier of the reference symbol is a pilot.", grid: "nr:51:30:1" },
+  { label: "5G NR, 20 MHz, DM-RS type 2", note: "51 resource blocks at 30 kHz subcarrier spacing. Pairs of adjacent pilot subcarriers, six subcarriers apart.", grid: "nr:51:30:2" },
+  { label: "LTE, 20 MHz, CRS of port 0", note: "100 resource blocks at 15 kHz subcarrier spacing. Every sixth subcarrier of the reference symbol is a pilot.", grid: "lte:100" },
+  { label: "DVB-T2 8K, PP1, guard 1/4", note: "1024 adjacent subcarriers of an 8 MHz channel. After interpolation across symbols every third subcarrier is a pilot.", grid: "dvbt2:8k:PP1:1/4", map: "comb:3", window: 1024 },
+  { label: "DVB-T2 8K, PP3, guard 1/8", note: "1024 adjacent subcarriers of an 8 MHz channel. After interpolation across symbols every sixth subcarrier is a pilot.", grid: "dvbt2:8k:PP3:1/8", map: "comb:6", window: 1024 },
+  { label: "DVB-T2 8K, PP5, guard 1/16", note: "1024 adjacent subcarriers of an 8 MHz channel. After interpolation across symbols every twelfth subcarrier is a pilot.", grid: "dvbt2:8k:PP5:1/16", map: "comb:12", window: 1024 },
+  { label: "DVB-T2 8K, PP7, guard 1/128", note: "1024 adjacent subcarriers of an 8 MHz channel. After interpolation across symbols every twenty-fourth subcarrier is a pilot.", grid: "dvbt2:8k:PP7:1/128", map: "comb:24", window: 1024 },
+  { label: "64-subcarrier link, 8 pilots", note: "312.5 kHz subcarrier spacing, cyclic prefix of 0.8 microseconds, 8 equally spaced pilots.", grid: "custom:64:312500:64:0.8us", map: "centred:8" },
+  { label: "Custom grid and pilot map", note: "Enter the grid and the pilot map in the notation of the command line.", custom: true },
+];
+const SERIES = {
+  "nearest pilot": ["nearest pilot", "#7f7f7f"],
+  "linear (constant edges)": ["linear interpolation", "#1f77b4"],
+  "cubic spline (constant edges)": ["cubic spline", "#17becf"],
+  "DFT interpolation": ["transform domain", "#2ca02c"],
+  "DFT least squares (ridge)": ["tap fit, ridge", "#2ca02c"],
+  "Wiener (uniform, prefix-wide)": ["Wiener, prefix-wide", "#ff7f0e"],
+  "Wiener (uniform, span rule)": ["Wiener, span rule", "#9467bd"],
+  "Wiener (uniform, best width)": ["Wiener, best width", "#8c564b"],
+  "Wiener (matched)": ["Wiener, matched", "#d62728"],
+};
+const MINUS = String.fromCharCode(8722);
+const $ = (id) => document.getElementById(id);
+let bridge = null;
+let lastRun = null;
+
+function setStatus(text, isError) {
+  $("status").textContent = text;
+  $("status").className = isError ? "error" : "";
+}
+function nameOf(est) { return (SERIES[est] || [est, "#444444"])[0]; }
+function colorOf(est) { return (SERIES[est] || [est, "#444444"])[1]; }
+function fmt(value, digits) { return value === null || value === undefined ? "n/a" : Number(value).toFixed(digits).replace("-", MINUS); }
+function yieldToPage() { return new Promise((resolve) => setTimeout(resolve, 30)); }
+
+async function start() {
+  SYSTEMS.forEach((s, i) => { const o = document.createElement("option"); o.value = i; o.textContent = s.label; $("system").appendChild(o); });
+  $("system").value = 2;
+  const showSystem = () => { const sys = SYSTEMS[$("system").value]; $("customBox").hidden = !sys.custom; $("systemNote").textContent = sys.note; };
+  $("system").addEventListener("change", showSystem);
+  showSystem();
+  $("profileKind").addEventListener("change", () => {
+    for (const k of ["exp", "inf", "nist", "csv"]) $(k + "Box").hidden = $("profileKind").value !== k;
+  });
+  $("form").addEventListener("submit", (ev) => { ev.preventDefault(); compute(); });
+  $("snrPick").addEventListener("change", renderEstimators);
+  $("download").addEventListener("click", downloadCsv);
+  $("pyVersion").textContent = PYODIDE_VERSION;
+  try {
+    const pyodide = await loadPyodide();
+    setStatus("Loading NumPy, SciPy and pandas.");
+    await pyodide.loadPackage(["numpy", "scipy", "pandas"]);
+    setStatus("Loading the ofdmest package.");
+    pyodide.FS.mkdirTree("/lib/ofdmest");
+    for (const f of PACKAGE_FILES) {
+      const r = await fetch(PACKAGE_BASE + f);
+      if (!r.ok) throw new Error("could not load " + f);
+      pyodide.FS.writeFile("/lib/ofdmest/" + f, await r.text());
+    }
+    const b = await fetch("bridge.py");
+    if (!b.ok) throw new Error("could not load bridge.py");
+    pyodide.FS.writeFile("/lib/bridge.py", await b.text());
+    pyodide.runPython("import sys; sys.path.insert(0, '/lib')");
+    bridge = pyodide.pyimport("bridge");
+    $("pkgVersion").textContent = bridge.version();
+    window.ofdmestRunPoint = (requestJson) => bridge.run_point(requestJson);
+    window.ofdmestRuntime = () => pyodide.runPython("import json, sys, numpy, scipy; json.dumps({'python': sys.version.split()[0], 'numpy': numpy.__version__, 'scipy': scipy.__version__})");
+    $("go").disabled = false;
+    setStatus("Ready.");
+  } catch (err) {
+    setStatus("The Python runtime could not be loaded: " + err.message, true);
+  }
+}
+
+function parseCsvProfile(text, name) {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+  if (lines.length < 2) throw new Error("the profile file has no data rows");
+  const head = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const di = head.indexOf("delay_s"), pi = head.indexOf("power");
+  if (di < 0 || pi < 0) throw new Error("the profile file needs the columns delay_s and power");
+  const delay = [], power = [];
+  for (const line of lines.slice(1)) {
+    const cells = line.split(",");
+    const d = Number(cells[di]), p = Number(cells[pi]);
+    if (!Number.isFinite(d) || !Number.isFinite(p)) throw new Error("the profile file has a row that is not numeric: " + line);
+    delay.push(d); power.push(p);
+  }
+  return { delay_s: delay, power: power, name: name };
+}
+
+function positive(id, what) {
+  const v = Number($(id).value);
+  if (!Number.isFinite(v) || v <= 0) throw new Error(what + " must be a positive number");
+  return v;
+}
+
+async function readInputs() {
+  const sys = SYSTEMS[$("system").value];
+  const q = {};
+  if (sys.custom) {
+    q.grid = $("gridSpec").value.trim();
+    q.map = $("mapSpec").value.trim();
+    if (!q.grid) throw new Error("enter a grid");
+  } else {
+    q.grid = sys.grid; q.map = sys.map || ""; q.window = sys.window || 0;
+  }
+  q.system = sys.custom ? q.grid : sys.label;
+  const kind = $("profileKind").value;
+  if (kind === "exp") {
+    q.profile = "exp:" + positive("spread", "The RMS delay spread") + "ns";
+  } else if (kind === "inf") {
+    const l = positive("hallL", "The hall length"), w = positive("hallW", "The hall width"), h = positive("hallH", "The hall height");
+    q.profile = "inf:" + (l * w * h) + ":" + (2 * (l * w + l * h + w * h)) + ":" + ($("los").checked ? "los" : "nlos");
+  } else if (kind === "nist") {
+    const site = $("site").value;
+    const r = await fetch(PROFILE_BASE + "nist_profile_" + site + ".csv");
+    if (!r.ok) throw new Error("could not load the measured profile");
+    q.profile = parseCsvProfile(await r.text(), "NIST " + $("site").selectedOptions[0].textContent.toLowerCase() + ", measured");
+  } else {
+    const file = $("file").files[0];
+    if (!file) throw new Error("choose a CSV file with the delay profile");
+    q.profile = parseCsvProfile(await file.text(), file.name);
+  }
+  const snr = $("snr").value.split(",").map((s) => s.trim()).filter((s) => s.length > 0).map(Number);
+  if (snr.length === 0 || snr.length > 9 || snr.some((v) => !Number.isFinite(v) || v < -10 || v > 40)) {
+    throw new Error("Enter one to nine SNR values between -10 and 40 dB, separated by commas");
+  }
+  q.snr = Array.from(new Set(snr)).sort((a, b) => a - b);
+  if ($("designSpread").value.trim() !== "") q.design_spread_s = positive("designSpread", "The design delay spread") * 1e-9;
+  q.cap_at_max_delay = $("cap").checked;
+  q.search_best = $("best").checked;
+  return q;
+}
+
+async function compute() {
+  if (!bridge) return;
+  $("go").disabled = true;
+  try {
+    const q = await readInputs();
+    const points = [];
+    for (let i = 0; i < q.snr.length; i++) {
+      setStatus("Computing SNR " + q.snr[i] + " dB (" + (i + 1) + " of " + q.snr.length + ").");
+      await yieldToPage();
+      const request = Object.assign({}, q, { snr_db: q.snr[i] });
+      const out = JSON.parse(bridge.run_point(JSON.stringify(request)));
+      if (out.error) throw new Error(out.error);
+      points.push(out);
+    }
+    lastRun = { system: q.system, points: points };
+    render();
+    setStatus("Done.");
+  } catch (err) {
+    setStatus(err.message, true);
+  } finally {
+    $("go").disabled = false;
+  }
+}
+
+function render() {
+  const pts = lastRun.points, p0 = pts[0];
+  $("results").hidden = false;
+  const facts = [
+    ["System", lastRun.system], ["Pilot map", p0.map + ", " + p0.pilots + " pilots on " + p0.subcarriers + " subcarriers"],
+    ["Pilot overhead", fmt(p0.overhead_percent, 1) + " %"], ["Mean pilot spacing", fmt(p0.pilot_spacing_khz, 1) + " kHz"],
+    ["Analysed band", fmt(p0.band_mhz, 2) + " MHz"], ["Cyclic prefix", p0.cyclic_prefix_ns === null ? "not set" : fmt(p0.cyclic_prefix_ns, 0) + " ns"],
+    ["Profile", p0.profile], ["RMS delay spread of the profile", fmt(p0.profile_spread_ns, 1) + " ns"],
+    ["Largest delay of the profile", fmt(p0.profile_max_delay_ns, 0) + " ns"], ["Delay spread given to the rule", fmt(p0.design_spread_ns, 1) + " ns"],
+  ];
+  $("facts").innerHTML = "";
+  for (const [k, v] of facts) {
+    const d = document.createElement("div"), dt = document.createElement("dt"), dd = document.createElement("dd");
+    dt.textContent = k; dd.textContent = v; d.append(dt, dd); $("facts").appendChild(d);
+  }
+  $("summary").textContent = p0.map + ", " + p0.pilots + " pilots on " + p0.subcarriers + " subcarriers, mean pilot spacing " + fmt(p0.pilot_spacing_khz, 1)
+    + " kHz. Profile " + p0.profile + ", RMS delay spread " + fmt(p0.profile_spread_ns, 1) + " ns. Delay spread given to the rule " + fmt(p0.design_spread_ns, 1) + " ns.";
+  const withBest = pts.some((p) => p.best);
+  const head = ["SNR (dB)", "Rule width (ns)", "Taps", "Width / delay spread", "Rule error above matched (dB)"];
+  if (withBest) head.push("Best width (ns)", "Best taps");
+  const rows = pts.map((p) => {
+    const rule = p.estimators.find((e) => e.estimator === "Wiener (uniform, span rule)");
+    const r = [fmt(p.snr_db, 0), fmt(p.rule.width_ns, 0), String(p.rule.taps), fmt(p.rule.width_over_spread, 2), rule ? fmt(rule.loss_db, 2) : "n/a"];
+    if (withBest) r.push(p.best ? fmt(p.best.width_ns, 0) : "n/a", p.best ? String(p.best.taps) : "n/a");
+    return r;
+  });
+  fillTable($("ruleTable"), head, rows);
+
+  const names = [];
+  for (const p of pts) for (const e of p.estimators) if (e.error_db !== undefined && !names.includes(e.estimator)) names.push(e.estimator);
+  const series = (key) => names.map((n) => ({
+    name: n, color: colorOf(n),
+    points: pts.map((p) => { const e = p.estimators.find((x) => x.estimator === n); return e && e[key] !== null && e[key] !== undefined ? [p.snr_db, e[key]] : null; }).filter(Boolean),
+  }));
+  $("chartError").innerHTML = lineChart(series("error_db"), "SNR (dB)", "Error (dB)");
+  $("chartLoss").innerHTML = lineChart(series("snr_loss_db"), "SNR (dB)", "SNR loss (dB)");
+  $("legend").innerHTML = "";
+  for (const n of names) {
+    const s = document.createElement("span"), sw = document.createElement("span");
+    sw.className = "swatch"; sw.style.background = colorOf(n); s.append(sw, nameOf(n)); $("legend").appendChild(s);
+  }
+  const pick = $("snrPick"), keep = pick.value;
+  pick.innerHTML = "";
+  for (const p of pts) { const o = document.createElement("option"); o.value = p.snr_db; o.textContent = p.snr_db + " dB SNR"; pick.appendChild(o); }
+  if (pts.some((p) => String(p.snr_db) === keep)) pick.value = keep; else pick.value = pts[Math.floor(pts.length / 2)].snr_db;
+  renderEstimators();
+}
+
+function renderEstimators() {
+  if (!lastRun) return;
+  const p = lastRun.points.find((x) => String(x.snr_db) === $("snrPick").value) || lastRun.points[0];
+  const head = ["Estimator", "Error (dB)", "Above matched (dB)", "SNR loss (dB)", "Rate (bit per use)", "Multiplications per symbol"];
+  const table = $("estTable");
+  fillTable(table, head, p.estimators.map((e) => e.error_db === undefined
+    ? [nameOf(e.estimator), "not applicable", "", "", "", ""]
+    : [nameOf(e.estimator), fmt(e.error_db, 2), fmt(e.loss_db, 2), fmt(e.snr_loss_db, 2), fmt(e.rate_bits, 3), e.real_multiplications.toLocaleString("en-US")]));
+  Array.from(table.querySelectorAll("tbody tr")).forEach((tr, i) => {
+    const sw = document.createElement("span"); sw.className = "swatch"; sw.style.background = colorOf(p.estimators[i].estimator);
+    tr.firstChild.prepend(sw);
+  });
+}
+
+function fillTable(table, head, rows) {
+  table.innerHTML = "";
+  const thead = table.createTHead().insertRow();
+  for (const h of head) { const th = document.createElement("th"); th.textContent = h; thead.appendChild(th); }
+  const body = table.createTBody();
+  for (const r of rows) { const tr = body.insertRow(); for (const c of r) tr.insertCell().textContent = c; }
+}
+
+function niceTicks(lo, hi, target) {
+  const span = hi - lo || 1, raw = span / target, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= target) || 10 * mag;
+  const ticks = [];
+  for (let v = Math.ceil(lo / step - 1e-9) * step; v <= hi + 1e-9; v += step) ticks.push(Math.abs(v) < 1e-12 ? 0 : v);
+  return ticks;
+}
+
+function lineChart(series, xLabel, yLabel) {
+  const W = 460, H = 300, L = 54, R = 12, T = 10, B = 42;
+  const all = series.flatMap((s) => s.points);
+  if (all.length === 0) return "";
+  let x0 = Math.min(...all.map((p) => p[0])), x1 = Math.max(...all.map((p) => p[0]));
+  let y0 = Math.min(...all.map((p) => p[1])), y1 = Math.max(...all.map((p) => p[1]));
+  if (x0 === x1) { x0 -= 1; x1 += 1; }
+  const pad = (y1 - y0 || 1) * 0.06; y0 -= pad; y1 += pad;
+  const X = (v) => L + (v - x0) / (x1 - x0) * (W - L - R), Y = (v) => H - B - (v - y0) / (y1 - y0) * (H - T - B);
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + yLabel + ' against ' + xLabel + '">';
+  for (const t of niceTicks(y0, y1, 6)) {
+    s += '<line class="gridline" x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/>';
+    s += '<text x="' + (L - 6) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + String(Number(t.toFixed(2))).replace("-", MINUS) + '</text>';
+  }
+  for (const t of Array.from(new Set(all.map((p) => p[0])))) {
+    s += '<line class="axis" x1="' + X(t) + '" x2="' + X(t) + '" y1="' + (H - B) + '" y2="' + (H - B + 4) + '"/>';
+    s += '<text x="' + X(t) + '" y="' + (H - B + 18) + '" text-anchor="middle">' + t + '</text>';
+  }
+  s += '<line class="axis" x1="' + L + '" x2="' + (W - R) + '" y1="' + (H - B) + '" y2="' + (H - B) + '"/>';
+  s += '<line class="axis" x1="' + L + '" x2="' + L + '" y1="' + T + '" y2="' + (H - B) + '"/>';
+  s += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 6) + '" text-anchor="middle">' + xLabel + '</text>';
+  s += '<text transform="translate(14 ' + ((T + H - B) / 2) + ') rotate(-90)" text-anchor="middle">' + yLabel + '</text>';
+  for (const sr of series) {
+    if (sr.points.length === 0) continue;
+    const path = sr.points.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1)).join(" ");
+    s += '<path d="' + path + '" fill="none" stroke="' + sr.color + '" stroke-width="2"/>';
+    for (const p of sr.points) {
+      s += '<circle cx="' + X(p[0]).toFixed(1) + '" cy="' + Y(p[1]).toFixed(1) + '" r="3" fill="' + sr.color + '"><title>' + nameOf(sr.name) + ', ' + p[0] + ' dB SNR: ' + p[1].toFixed(2) + ' dB</title></circle>';
+    }
+  }
+  return s + "</svg>";
+}
+
+function downloadCsv() {
+  if (!lastRun) return;
+  const head = ["system", "map", "profile", "profile_rms_delay_spread_ns", "design_delay_spread_ns", "snr_db", "rule_width_ns", "rule_taps", "estimator", "error_db", "above_matched_db", "snr_loss_db", "rate_bits", "real_multiplications"];
+  const quote = (v) => '"' + String(v).replaceAll('"', '""') + '"';
+  const lines = [head.join(",")];
+  for (const p of lastRun.points) for (const e of p.estimators) {
+    if (e.error_db === undefined) continue;
+    lines.push([quote(lastRun.system), quote(p.map), quote(p.profile), p.profile_spread_ns, p.design_spread_ns, p.snr_db, p.rule.width_ns, p.rule.taps, quote(e.estimator), e.error_db, e.loss_db, e.snr_loss_db, e.rate_bits, e.real_multiplications].join(","));
+  }
+  const blob = new Blob([lines.join(String.fromCharCode(10)) + String.fromCharCode(10)], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "ofdmest_results.csv"; a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+start();
+</script>
+</body>
+</html>

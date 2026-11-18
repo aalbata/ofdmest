@@ -1,0 +1,920 @@
+{
+ "environment": {
+  "python": "3.12.10",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "ofdmest": "0.3.0"
+ },
+ "cases": [
+  {
+   "request": {
+    "grid": "lte:100",
+    "profile": "exp:131.8ns",
+    "snr_db": 15.0
+   },
+   "result": {
+    "snr_db": 15.0,
+    "pilots": 200,
+    "subcarriers": 1200,
+    "overhead_percent": 16.666666666666664,
+    "pilot_spacing_khz": 90.0,
+    "band_mhz": 18.0,
+    "sample_period_ns": 32.552083333333336,
+    "cyclic_prefix_ns": 4687.5,
+    "profile": "exponential 132 ns",
+    "profile_spread_ns": 131.79997896923297,
+    "profile_max_delay_ns": 1953.125,
+    "design_spread_ns": 131.79997896923297,
+    "rule": {
+     "width_ns": 984.1213044648287,
+     "taps": 31,
+     "width_over_spread": 7.466778918792993,
+     "unbounded_comb_width_ns": 1039.676860020384
+    },
+    "best": null,
+    "matched_error_db": -24.853066717904557,
+    "estimators": [
+     {
+      "estimator": "nearest pilot",
+      "error_db": -14.8810651644046,
+      "loss_db": 9.972001553499958,
+      "snr_loss_db": 3.1136223071724984,
+      "rate_bits": 3.4224100484089552,
+      "real_multiplications": 0
+     },
+     {
+      "estimator": "linear (constant edges)",
+      "error_db": -16.68696008083169,
+      "loss_db": 8.166106637072868,
+      "snr_loss_db": 2.2813605946225675,
+      "rate_bits": 3.6589365646384886,
+      "real_multiplications": 4800
+     },
+     {
+      "estimator": "cubic spline (constant edges)",
+      "error_db": -15.567831260694929,
+      "loss_db": 9.285235457209629,
+      "snr_loss_db": 2.7930313747717346,
+      "rate_bits": 3.5129287344195874,
+      "real_multiplications": 9200
+     },
+     {
+      "estimator": "DFT interpolation",
+      "error_db": -14.235964132679404,
+      "loss_db": 10.617102585225153,
+      "snr_loss_db": 2.72068224646622,
+      "rate_bits": 3.533460946890873,
+      "real_multiplications": 27606
+     },
+     {
+      "estimator": "Wiener (uniform, prefix-wide)",
+      "error_db": -18.42694872492569,
+      "loss_db": 6.426117992978867,
+      "snr_loss_db": 1.666665108031598,
+      "rate_bits": 3.836700706280938,
+      "real_multiplications": 960000
+     },
+     {
+      "estimator": "Wiener (uniform, span rule)",
+      "error_db": -24.31297115725668,
+      "loss_db": 0.5400955606478774,
+      "snr_loss_db": 0.4933176850242784,
+      "rate_bits": 4.182509243684597,
+      "real_multiplications": 960000
+     },
+     {
+      "estimator": "Wiener (matched)",
+      "error_db": -24.853066717904557,
+      "loss_db": 0.0,
+      "snr_loss_db": 0.4403682638672688,
+      "rate_bits": 4.198299715001716,
+      "real_multiplications": 960000
+     }
+    ],
+    "grid": "LTE 100 PRB",
+    "map": "LTE CRS (shift 0)"
+   }
+  },
+  {
+   "request": {
+    "grid": "nr:51:30:1",
+    "profile": "exp:36.1ns",
+    "snr_db": 5.0
+   },
+   "result": {
+    "snr_db": 5.0,
+    "pilots": 306,
+    "subcarriers": 612,
+    "overhead_percent": 50.0,
+    "pilot_spacing_khz": 60.0,
+    "band_mhz": 18.36,
+    "sample_period_ns": 32.552083333333336,
+    "cyclic_prefix_ns": 2343.75,
+    "profile": "exponential 36 ns",
+    "profile_spread_ns": 36.10001216346571,
+    "profile_max_delay_ns": 520.8333333333334,
+    "design_spread_ns": 36.10001216346571,
+    "rule": {
+     "width_ns": 208.56442646084253,
+     "taps": 7,
+     "width_over_spread": 5.777405988575148,
+     "unbounded_comb_width_ns": 263.0306573976617
+    },
+    "best": null,
+    "matched_error_db": -21.935707925497766,
+    "estimators": [
+     {
+      "estimator": "nearest pilot",
+      "error_db": -4.999549351299626,
+      "loss_db": 16.93615857419814,
+      "snr_loss_db": 3.6480504401197367,
+      "rate_bits": 1.0552022500155664,
+      "real_multiplications": 0
+     },
+     {
+      "estimator": "linear (constant edges)",
+      "error_db": -6.2446570140399675,
+      "loss_db": 15.691050911457799,
+      "snr_loss_db": 2.900632622826927,
+      "rate_bits": 1.1746476006477982,
+      "real_multiplications": 2448
+     },
+     {
+      "estimator": "cubic spline (constant edges)",
+      "error_db": -5.554395782316746,
+      "loss_db": 16.38131214318102,
+      "snr_loss_db": 3.3238963892168956,
+      "rate_bits": 1.1059793538000704,
+      "real_multiplications": 6732
+     },
+     {
+      "estimator": "DFT interpolation",
+      "error_db": -11.629906802742187,
+      "loss_db": 10.305801122755579,
+      "snr_loss_db": 1.0269133600084026,
+      "rate_bits": 1.5104783108223085,
+      "real_multiplications": 16384
+     },
+     {
+      "estimator": "Wiener (uniform, prefix-wide)",
+      "error_db": -13.136566954649016,
+      "loss_db": 8.79914097084875,
+      "snr_loss_db": 0.8142485151465717,
+      "rate_bits": 1.5518173422411108,
+      "real_multiplications": 749088
+     },
+     {
+      "estimator": "Wiener (uniform, span rule)",
+      "error_db": -21.450620379237183,
+      "loss_db": 0.4850875462605835,
+      "snr_loss_db": 0.12726451712430542,
+      "rate_bits": 1.6897101787406705,
+      "real_multiplications": 749088
+     },
+     {
+      "estimator": "Wiener (matched)",
+      "error_db": -21.935707925497766,
+      "loss_db": 0.0,
+      "snr_loss_db": 0.11482930246793899,
+      "rate_bits": 1.6922666706576133,
+      "real_multiplications": 749088
+     }
+    ],
+    "grid": "NR 51 PRB at 30 kHz",
+    "map": "NR DM-RS type 1 (port 0)"
+   }
+  },
+  {
+   "request": {
+    "grid": "nr:51:30:2",
+    "profile": {
+     "delay_s": [
+      0.0,
+      1.25e-08,
+      2.5e-08,
+      3.75e-08,
+      5e-08,
+      6.25e-08,
+      7.5e-08,
+      8.75e-08,
+      1e-07,
+      1.125e-07,
+      1.25e-07,
+      1.375e-07,
+      1.5e-07,
+      1.625e-07,
+      1.75e-07,
+      1.875e-07,
+      2e-07,
+      2.125e-07,
+      2.25e-07,
+      2.375e-07,
+      2.5e-07,
+      2.625e-07,
+      2.75e-07,
+      2.875e-07,
+      3e-07,
+      3.125e-07,
+      3.25e-07,
+      3.375e-07,
+      3.5e-07,
+      3.625e-07,
+      3.75e-07,
+      3.875e-07,
+      4e-07,
+      4.125e-07,
+      4.25e-07,
+      4.375e-07,
+      4.5e-07,
+      4.625e-07,
+      4.75e-07,
+      4.875e-07,
+      5e-07,
+      5.125e-07,
+      5.25e-07,
+      5.375e-07,
+      5.5e-07,
+      5.625e-07,
+      5.75e-07,
+      5.875e-07,
+      6e-07,
+      6.125e-07,
+      6.25e-07,
+      6.375e-07,
+      6.5e-07
+     ],
+     "power": [
+      0.00399709235,
+      0.023582926141,
+      0.055649009893,
+      0.11463723534,
+      0.11612924849,
+      0.086356982798,
+      0.069097055097,
+      0.058263236328,
+      0.05564937701,
+      0.052557543,
+      0.044724536059,
+      0.03831315474,
+      0.033823750986,
+      0.030173632533,
+      0.026824230202,
+      0.023262794837,
+      0.020227401403,
+      0.017866802781,
+      0.015878592497,
+      0.013795058806,
+      0.011900763045,
+      0.010381622474,
+      0.0093077416388,
+      0.0086792182717,
+      0.0080579937983,
+      0.0069398832199,
+      0.0057424479219,
+      0.0048910400413,
+      0.0043652170775,
+      0.0038810306123,
+      0.0034084368844,
+      0.0030866607449,
+      0.0025814922098,
+      0.0021410936599,
+      0.0018099314522,
+      0.0015961410897,
+      0.0014657882191,
+      0.0013079542238,
+      0.0011329163389,
+      0.00097366405336,
+      0.00084994892858,
+      0.00076454387302,
+      0.00065990275817,
+      0.00056017290116,
+      0.00048344564707,
+      0.00042172830726,
+      0.00037418358174,
+      0.00032883028683,
+      0.00030237130987,
+      0.00026400638457,
+      0.00022039430916,
+      0.00017036308635,
+      0.00013941035426
+     ],
+     "name": "NIST machine_shop, measured"
+    },
+    "snr_db": 25.0,
+    "cap_at_max_delay": true
+   },
+   "result": {
+    "snr_db": 25.0,
+    "pilots": 204,
+    "subcarriers": 612,
+    "overhead_percent": 33.33333333333333,
+    "pilot_spacing_khz": 90.0,
+    "band_mhz": 18.36,
+    "sample_period_ns": 32.552083333333336,
+    "cyclic_prefix_ns": 2343.75,
+    "profile": "NIST machine_shop, measured",
+    "profile_spread_ns": 93.43790337663614,
+    "profile_max_delay_ns": 650.0,
+    "design_spread_ns": 93.43790337663614,
+    "rule": {
+     "width_ns": 650.0,
+     "taps": 20,
+     "width_over_spread": 6.956491707438403,
+     "unbounded_comb_width_ns": 984.3558418006681
+    },
+    "best": null,
+    "matched_error_db": -36.14249228467935,
+    "estimators": [
+     {
+      "estimator": "nearest pilot",
+      "error_db": -23.460394790614593,
+      "loss_db": 12.682097494064756,
+      "snr_loss_db": 3.3520998680937204,
+      "rate_bits": 6.412109870846659,
+      "real_multiplications": 0
+     },
+     {
+      "estimator": "linear (constant edges)",
+      "error_db": -26.23976333120797,
+      "loss_db": 9.902728953471378,
+      "snr_loss_db": 2.391877151675196,
+      "rate_bits": 6.722183392084996,
+      "real_multiplications": 2448
+     },
+     {
+      "estimator": "cubic spline (constant edges)",
+      "error_db": -21.431674049704007,
+      "loss_db": 14.710818234975342,
+      "snr_loss_db": 4.935445464529586,
+      "rate_bits": 5.904623121878037,
+      "real_multiplications": 5712
+     },
+     {
+      "estimator": "DFT least squares (ridge)",
+      "error_db": -30.260434740347716,
+      "loss_db": 5.882057544331634,
+      "snr_loss_db": 0.9770557572828729,
+      "rate_bits": 7.181594276529115,
+      "real_multiplications": 499392
+     },
+     {
+      "estimator": "Wiener (uniform, prefix-wide)",
+      "error_db": -30.913458506058813,
+      "loss_db": 5.229033778620536,
+      "snr_loss_db": 0.9514577678414042,
+      "rate_bits": 7.189930512148193,
+      "real_multiplications": 499392
+     },
+     {
+      "estimator": "Wiener (uniform, span rule)",
+      "error_db": -35.86359987251776,
+      "loss_db": 0.2788924121615892,
+      "snr_loss_db": 0.33803944541197595,
+      "rate_bits": 7.389924561810644,
+      "real_multiplications": 499392
+     },
+     {
+      "estimator": "Wiener (matched)",
+      "error_db": -36.14249228467935,
+      "loss_db": 0.0,
+      "snr_loss_db": 0.32005380694486263,
+      "rate_bits": 7.3957948235070745,
+      "real_multiplications": 499392
+     }
+    ],
+    "grid": "NR 51 PRB at 30 kHz",
+    "map": "NR DM-RS type 2 (port 0)"
+   }
+  },
+  {
+   "request": {
+    "grid": "lte:100",
+    "profile": {
+     "delay_s": [
+      0.0,
+      5e-09,
+      1e-08,
+      1.5e-08,
+      2e-08,
+      2.5e-08,
+      3e-08,
+      3.5e-08,
+      4e-08,
+      4.5e-08,
+      5e-08,
+      5.5e-08,
+      6e-08,
+      6.5e-08,
+      7e-08,
+      7.5e-08,
+      8e-08,
+      8.5e-08,
+      9e-08,
+      9.5e-08,
+      1e-07,
+      1.05e-07,
+      1.1e-07,
+      1.15e-07,
+      1.2e-07,
+      1.25e-07,
+      1.3e-07,
+      1.35e-07,
+      1.4e-07,
+      1.45e-07,
+      1.5e-07,
+      1.55e-07,
+      1.6e-07,
+      1.65e-07,
+      1.7e-07,
+      1.75e-07,
+      1.8e-07,
+      1.85e-07,
+      1.9e-07,
+      1.95e-07,
+      2e-07,
+      2.05e-07,
+      2.1e-07,
+      2.15e-07,
+      2.2e-07,
+      2.25e-07,
+      2.3e-07,
+      2.35e-07,
+      2.4e-07,
+      2.45e-07,
+      2.5e-07,
+      2.55e-07,
+      2.6e-07,
+      2.65e-07,
+      2.7e-07,
+      2.75e-07,
+      2.8e-07,
+      2.85e-07,
+      2.9e-07,
+      2.95e-07,
+      3e-07,
+      3.05e-07,
+      3.1e-07,
+      3.15e-07,
+      3.2e-07,
+      3.25e-07,
+      3.3e-07,
+      3.35e-07,
+      3.4e-07,
+      3.45e-07,
+      3.5e-07,
+      3.55e-07,
+      3.6e-07,
+      3.65e-07,
+      3.7e-07,
+      3.75e-07
+     ],
+     "power": [
+      0.015081988338,
+      0.041561090989,
+      0.076010243188,
+      0.11400386198,
+      0.11013315273,
+      0.079406469329,
+      0.056223968573,
+      0.042934351775,
+      0.03791560287,
+      0.035797302863,
+      0.033587818869,
+      0.030975570267,
+      0.028348378202,
+      0.024909540972,
+      0.022058915845,
+      0.019724633024,
+      0.017884788799,
+      0.016980697283,
+      0.015767761301,
+      0.014636218587,
+      0.013503994174,
+      0.012323583921,
+      0.011036559541,
+      0.010141433317,
+      0.009476803067,
+      0.00876311725,
+      0.008067131621,
+      0.0074066409317,
+      0.006668720279,
+      0.0060820982514,
+      0.005645382544,
+      0.005284304105,
+      0.0050173607979,
+      0.0046206250208,
+      0.0042004312833,
+      0.0037750134677,
+      0.0034859777155,
+      0.0032702953625,
+      0.00309911167,
+      0.0028698681496,
+      0.002617016149,
+      0.0024509264569,
+      0.0022987648904,
+      0.0021667783443,
+      0.0019664346495,
+      0.001798406976,
+      0.0015809262457,
+      0.0014237130984,
+      0.0013152726987,
+      0.0012275148788,
+      0.0011595371312,
+      0.0010926204542,
+      0.00098793117546,
+      0.00089025990536,
+      0.00080753766647,
+      0.00073239293202,
+      0.0006689690537,
+      0.00061157685721,
+      0.00057215125097,
+      0.00054197167295,
+      0.00050492628848,
+      0.00045794269571,
+      0.00041797169641,
+      0.00037923624495,
+      0.00035004891777,
+      0.00031619803797,
+      0.00028058347629,
+      0.00025662446737,
+      0.00023826605943,
+      0.00022144709353,
+      0.00020514176518,
+      0.00019085328911,
+      0.00017297946272,
+      0.00015612777338,
+      0.00013761676602,
+      0.00012252522799
+     ],
+     "name": "NIST steam_plant, measured"
+    },
+    "snr_db": 20.0,
+    "design_spread_s": 3.61e-08
+   },
+   "result": {
+    "snr_db": 20.0,
+    "pilots": 200,
+    "subcarriers": 1200,
+    "overhead_percent": 16.666666666666664,
+    "pilot_spacing_khz": 90.0,
+    "band_mhz": 18.0,
+    "sample_period_ns": 32.552083333333336,
+    "cyclic_prefix_ns": 4687.5,
+    "profile": "NIST steam_plant, measured",
+    "profile_spread_ns": 54.79721576283118,
+    "profile_max_delay_ns": 375.0,
+    "design_spread_ns": 36.1,
+    "rule": {
+     "width_ns": 317.5227177634703,
+     "taps": 10,
+     "width_over_spread": 8.795643151342668,
+     "unbounded_comb_width_ns": 373.0782733190258
+    },
+    "best": null,
+    "matched_error_db": -33.100790975386374,
+    "estimators": [
+     {
+      "estimator": "nearest pilot",
+      "error_db": -19.927048213892647,
+      "loss_db": 13.173742761493727,
+      "snr_loss_db": 3.050672949491016,
+      "rate_bits": 4.925100650913264,
+      "real_multiplications": 0
+     },
+     {
+      "estimator": "linear (constant edges)",
+      "error_db": -21.688944530119105,
+      "loss_db": 11.411846445267269,
+      "snr_loss_db": 2.2427898238470974,
+      "rate_bits": 5.176181093867458,
+      "real_multiplications": 4800
+     },
+     {
+      "estimator": "cubic spline (constant edges)",
+      "error_db": -20.568596371801778,
+      "loss_db": 12.532194603584596,
+      "snr_loss_db": 2.7497869269922326,
+      "rate_bits": 5.018335681573254,
+      "real_multiplications": 9200
+     },
+     {
+      "estimator": "DFT interpolation",
+      "error_db": -12.833968332512839,
+      "loss_db": 20.266822642873535,
+      "snr_loss_db": 4.753044328315159,
+      "rate_bits": 4.40460360453336,
+      "real_multiplications": 27606
+     },
+     {
+      "estimator": "Wiener (uniform, prefix-wide)",
+      "error_db": -23.11145423438335,
+      "loss_db": 9.989336741003026,
+      "snr_loss_db": 1.6636122839655414,
+      "rate_bits": 5.3575630879304645,
+      "real_multiplications": 960000
+     },
+     {
+      "estimator": "Wiener (uniform, span rule)",
+      "error_db": -29.225749512961716,
+      "loss_db": 3.875041462424658,
+      "snr_loss_db": 0.4827470389259396,
+      "rate_bits": 5.73050902294495,
+      "real_multiplications": 960000
+     },
+     {
+      "estimator": "Wiener (matched)",
+      "error_db": -33.100790975386374,
+      "loss_db": 0.0,
+      "snr_loss_db": 0.20861791145825492,
+      "rate_bits": 5.817625836249045,
+      "real_multiplications": 960000
+     }
+    ],
+    "grid": "LTE 100 PRB",
+    "map": "LTE CRS (shift 0)"
+   }
+  },
+  {
+   "request": {
+    "grid": "dvbt2:8k:PP3:1/8",
+    "map": "comb:6",
+    "window": 1024,
+    "profile": "exp:74.3ns",
+    "snr_db": 15.0
+   },
+   "result": {
+    "snr_db": 15.0,
+    "pilots": 171,
+    "subcarriers": 1024,
+    "overhead_percent": 16.69921875,
+    "pilot_spacing_khz": 6.6833751044277365,
+    "band_mhz": 1.142857142857143,
+    "sample_period_ns": 109.37499999999999,
+    "cyclic_prefix_ns": 112000.0,
+    "profile": "exponential 74 ns",
+    "profile_spread_ns": 74.3000025488131,
+    "profile_max_delay_ns": 1093.75,
+    "design_spread_ns": 74.3000025488131,
+    "rule": {
+     "width_ns": 410.9404637754543,
+     "taps": 4,
+     "width_over_spread": 5.53082704816164,
+     "unbounded_comb_width_ns": 821.8809275509086
+    },
+    "best": null,
+    "matched_error_db": -33.04010392865489,
+    "estimators": [
+     {
+      "estimator": "nearest pilot",
+      "error_db": -14.999851692705883,
+      "loss_db": 18.040252235949005,
+      "snr_loss_db": 3.078492600598855,
+      "rate_bits": 3.4322915251270407,
+      "real_multiplications": 0
+     },
+     {
+      "estimator": "linear (constant edges)",
+      "error_db": -16.6928818869683,
+      "loss_db": 16.347222041686585,
+      "snr_loss_db": 2.276972867842135,
+      "rate_bits": 3.6601965292584353,
+      "real_multiplications": 4096
+     },
+     {
+      "estimator": "cubic spline (constant edges)",
+      "error_db": -15.568649566486826,
+      "loss_db": 17.47145436216806,
+      "snr_loss_db": 2.7929764091785323,
+      "rate_bits": 3.5129443188807348,
+      "real_multiplications": 7854
+     },
+     {
+      "estimator": "DFT interpolation",
+      "error_db": -14.95160974344564,
+      "loss_db": 18.088494185209246,
+      "snr_loss_db": 2.964082452900188,
+      "rate_bits": 3.4645376395588903,
+      "real_multiplications": 23062
+     },
+     {
+      "estimator": "Wiener (uniform, prefix-wide)",
+      "error_db": -14.536347945049107,
+      "loss_db": 18.503755983605778,
+      "snr_loss_db": 2.7661840204195904,
+      "rate_bits": 3.5205434117558365,
+      "real_multiplications": 700416
+     },
+     {
+      "estimator": "Wiener (uniform, span rule)",
+      "error_db": -32.80489609505749,
+      "loss_db": 0.23520783359739994,
+      "snr_loss_db": 0.07161396084582705,
+      "rate_bits": 4.308681724096153,
+      "real_multiplications": 700416
+     },
+     {
+      "estimator": "Wiener (matched)",
+      "error_db": -33.04010392865489,
+      "loss_db": 0.0,
+      "snr_loss_db": 0.06968792183844741,
+      "rate_bits": 4.309260119045556,
+      "real_multiplications": 700416
+     }
+    ],
+    "grid": "DVB-T2 8K PP3 GI 0.125 (1024 carriers analysed)",
+    "map": "comb 6 offset 0"
+   }
+  },
+  {
+   "request": {
+    "grid": "custom:64:312500:64:0.8us",
+    "map": "centred:8",
+    "profile": "exp:74.3ns",
+    "snr_db": 10.0,
+    "search_best": true
+   },
+   "result": {
+    "snr_db": 10.0,
+    "pilots": 8,
+    "subcarriers": 64,
+    "overhead_percent": 12.5,
+    "pilot_spacing_khz": 2500.0,
+    "band_mhz": 20.0,
+    "sample_period_ns": 50.0,
+    "cyclic_prefix_ns": 800.0,
+    "profile": "exponential 74 ns",
+    "profile_spread_ns": 74.2999886795668,
+    "profile_max_delay_ns": 800.0,
+    "design_spread_ns": 74.2999886795668,
+    "rule": {
+     "width_ns": 246.15521074438846,
+     "taps": 5,
+     "width_over_spread": 3.3129912281141904,
+     "unbounded_comb_width_ns": 296.15521074438846
+    },
+    "best": {
+     "width_ns": 250.0,
+     "taps": 6
+    },
+    "matched_error_db": -10.930931814441598,
+    "estimators": [
+     {
+      "estimator": "nearest pilot",
+      "error_db": -6.090130190199552,
+      "loss_db": 4.8408016242420455,
+      "snr_loss_db": 5.0908990033095645,
+      "rate_bits": 1.6971923623180354,
+      "real_multiplications": 0
+     },
+     {
+      "estimator": "linear (constant edges)",
+      "error_db": -7.797430390529417,
+      "loss_db": 3.133501423912181,
+      "snr_loss_db": 4.655252712382804,
+      "rate_bits": 1.7882298151212892,
+      "real_multiplications": 256
+     },
+     {
+      "estimator": "cubic spline (constant edges)",
+      "error_db": -6.878300586156635,
+      "loss_db": 4.052631228284963,
+      "snr_loss_db": 5.067984482944637,
+      "rate_bits": 1.7019163458668807,
+      "real_multiplications": 464
+     },
+     {
+      "estimator": "DFT interpolation",
+      "error_db": -9.580790085734161,
+      "loss_db": 1.3501417287074364,
+      "snr_loss_db": 3.466901277584098,
+      "rate_bits": 2.0493461118368934,
+      "real_multiplications": 816
+     },
+     {
+      "estimator": "Wiener (uniform, prefix-wide)",
+      "error_db": -2.052146851973777,
+      "loss_db": 8.87878496246782,
+      "snr_loss_db": 7.626242721679078,
+      "rate_bits": 1.2205918441191024,
+      "real_multiplications": 2048
+     },
+     {
+      "estimator": "Wiener (uniform, span rule)",
+      "error_db": -10.006230647567007,
+      "loss_db": 0.9247011668745913,
+      "snr_loss_db": 3.4592888369781285,
+      "rate_bits": 2.051077194795232,
+      "real_multiplications": 2048
+     },
+     {
+      "estimator": "Wiener (uniform, best width)",
+      "error_db": -10.31452236129333,
+      "loss_db": 0.6164094531482682,
+      "snr_loss_db": 3.2751038912628037,
+      "rate_bits": 2.0931811469200006,
+      "real_multiplications": 2048
+     },
+     {
+      "estimator": "Wiener (matched)",
+      "error_db": -10.930931814441598,
+      "loss_db": 0.0,
+      "snr_loss_db": 2.9314647612805143,
+      "rate_bits": 2.172851187961899,
+      "real_multiplications": 2048
+     }
+    ],
+    "grid": "custom 64 tones at 312500 Hz",
+    "map": "uniform centred"
+   }
+  },
+  {
+   "request": {
+    "grid": "nr:51:30:1",
+    "profile": "inf:14400:6000:nlos",
+    "snr_db": 30.0
+   },
+   "result": {
+    "snr_db": 30.0,
+    "pilots": 306,
+    "subcarriers": 612,
+    "overhead_percent": 50.0,
+    "pilot_spacing_khz": 60.0,
+    "band_mhz": 18.36,
+    "sample_period_ns": 32.552083333333336,
+    "cyclic_prefix_ns": 2343.75,
+    "profile": "InF NLOS 38 ns",
+    "profile_spread_ns": 37.76010121500412,
+    "profile_max_delay_ns": 553.3854166666667,
+    "design_spread_ns": 37.76010121500412,
+    "rule": {
+     "width_ns": 436.3270378543172,
+     "taps": 14,
+     "width_over_spread": 11.555240156002045,
+     "unbounded_comb_width_ns": 490.79326879113637
+    },
+    "best": null,
+    "matched_error_db": -44.26834793994003,
+    "estimators": [
+     {
+      "estimator": "nearest pilot",
+      "error_db": -29.84517437996856,
+      "loss_db": 14.423173559971467,
+      "snr_loss_db": 3.066866691823787,
+      "rate_bits": 8.133632629114755,
+      "real_multiplications": 0
+     },
+     {
+      "estimator": "linear (constant edges)",
+      "error_db": -31.243939350119444,
+      "loss_db": 13.024408589820585,
+      "snr_loss_db": 2.3893245620673476,
+      "rate_bits": 8.356294922076891,
+      "real_multiplications": 2448
+     },
+     {
+      "estimator": "cubic spline (constant edges)",
+      "error_db": -30.55381226661933,
+      "loss_db": 13.714535673320697,
+      "snr_loss_db": 2.7345517122093455,
+      "rate_bits": 8.24280320998998,
+      "real_multiplications": 6732
+     },
+     {
+      "estimator": "DFT interpolation",
+      "error_db": -16.230343055677476,
+      "loss_db": 28.038004884262552,
+      "snr_loss_db": 9.942204769178208,
+      "rate_bits": 5.902468326342769,
+      "real_multiplications": 16384
+     },
+     {
+      "estimator": "Wiener (uniform, prefix-wide)",
+      "error_db": -37.947803058771385,
+      "loss_db": 6.320544881168644,
+      "snr_loss_db": 0.6419883527394283,
+      "rate_bits": 8.93179493768214,
+      "real_multiplications": 749088
+     },
+     {
+      "estimator": "Wiener (uniform, span rule)",
+      "error_db": -43.85879475674811,
+      "loss_db": 0.40955318319191747,
+      "snr_loss_db": 0.17418263525522448,
+      "rate_bits": 9.086130264732814,
+      "real_multiplications": 749088
+     },
+     {
+      "estimator": "Wiener (matched)",
+      "error_db": -44.26834793994003,
+      "loss_db": 0.0,
+      "snr_loss_db": 0.15917256297889537,
+      "rate_bits": 9.091083861793994,
+      "real_multiplications": 749088
+     }
+    ],
+    "grid": "NR 51 PRB at 30 kHz",
+    "map": "NR DM-RS type 1 (port 0)"
+   }
+  }
+ ]
+}

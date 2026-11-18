@@ -1,0 +1,26 @@
+\begin{table}[b]
+\caption{Cost per OFDM symbol as real multiplications of a straightforward implementation (Mult.), design time of the matrix, and measured application time per symbol as a stored matrix (Dense) and as a structured implementation where one exists (Struct.)}
+\label{tab:cost}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{1.6pt}
+\begin{tabular}{llrrrr}
+\toprule
+Map & Estimator & Mult. & Design & Dense & Struct. \\
+ & & & (ms) & (\si{\micro\second}) & (\si{\micro\second}) \\
+\midrule
+NR type 1 & Nearest pilot & 0 & 0.5 & 15 & 3 \\
+NR type 1 & Linear & 2,448 & 3.4 & 15 & 22 \\
+NR type 1 & Spline & 6,732 & 10.9 & 15 & n/a \\
+NR type 1 & Transform domain & 16,384 & 3.3 & 14 & 17 \\
+NR type 1 & Wiener, prefix & 749,088 & 82.0 & 14 & n/a \\
+NR type 1 & Wiener, matched & 749,088 & 29.2 & 13 & n/a \\
+LTE CRS & Nearest pilot & 0 & 0.6 & 20 & 4 \\
+LTE CRS & Linear & 4,800 & 4.3 & 22 & 31 \\
+LTE CRS & Spline & 9,200 & 5.2 & 20 & n/a \\
+LTE CRS & Transform domain & 27,606 & 8.4 & 23 & 24 \\
+LTE CRS & Wiener, prefix & 960,000 & 141.1 & 21 & n/a \\
+LTE CRS & Wiener, matched & 960,000 & 25.4 & 19 & n/a \\
+\bottomrule
+\end{tabular}
+\end{table}
